@@ -1,0 +1,133 @@
+# Editorial text for the 2027 edition.
+#
+# RULES
+# - Never type a statistic. Quote it with a token: {s.path} for stats json (data/stats/2027.json),
+#   {w.path} for this week's calendar-window stat, {m.path} for this month, {c.path} for calendar.yaml.
+#   Add |signed for a sign: {w.avg|signed}. Tokens are resolved by pipeline/assemble.py.
+# - Text is Typst markup: *bold*, _italic_. Escape literal $ # _ * with a backslash.
+# - Describe, don't predict. No causal stories the data can't show.
+# - Scheduled events (FOMC, opex, holidays, earnings windows) are appended automatically
+#   from calendar.yaml; don't restate their dates here. Set `events: false` to suppress.
+# - Weeks without a blurb get an auto-generated one (see assemble.py). Writing the rest is open work.
+
+pages:
+  year_ahead: >-
+    The third year of the presidential term has been the strongest of the four-year cycle in
+    this data. Since {s.cycle.3.first} the S&P 500 rose in {s.cycle.3.pct_up}% of pre-election years,
+    averaging {s.cycle.3.avg|signed}% — against {s.years.all.avg|signed}% and {s.years.all.pct_up}% up across
+    all years. {s.cycle.3.n} years is a small sample; treat this as a tilt, not a forecast.
+  earnings: >-
+    Four times a year most of the S&P 500 reports inside about five weeks, opening with the
+    big banks roughly two weeks after the quarter ends. The windows below are this edition's
+    estimates; the same calendar dates were measured in every year since {s.meta.first_year}.
+    Since 1995, when quarterly reporting settled into its modern rhythm, the average day inside
+    these windows has gained {s.earnings.daily_in_1995.avg_bp} basis points against
+    {s.earnings.daily_out_1995.avg_bp} outside them — a small edge, and one that says nothing about
+    any single company's report.
+
+months:
+  1:
+    blurb: >-
+      In pre-election years January has been the strongest month of the year in this data — up
+      in {m.pre.pct_up}% of {m.pre.n}, averaging {m.pre.avg|signed}% — against {m.all.avg|signed}% across
+      all years. The last twenty Januaries have been flatter ({m.last20.avg|signed}%). January also sets
+      the Barometer, which has matched the full year's sign in {s.jan_barometer.pct}% of years.
+  2:
+    blurb: >-
+      February is close to a coin flip: {m.all.pct_up}% of years up, {m.all.avg|signed}% on average, and
+      the last twenty years look the same. Pre-election Februaries have done better
+      ({m.pre.avg|signed}%, {m.pre.pct_up}% up). No FOMC meeting this month.
+  3:
+    blurb: >-
+      March has been reliably positive — up in {m.all.pct_up}% of years — and pre-election Marches
+      more so, at {m.pre.pct_up}%. It closes the first quarter; an FOMC decision with projections and
+      quad witching land in the same week.
+  4:
+    blurb: >-
+      April is the standout month of the pre-election year: up in {m.pre.pct_up}% of {m.pre.n} pre-election
+      years, averaging {m.pre.avg|signed}%. It has been firm lately too — up in {m.last20.pct_up}% of the
+      last twenty. April closes the November–April "best six months."
+  5:
+    blurb: >-
+      May opens the weaker half of the calendar. Since {s.meta.first_year} the May–October stretch has
+      averaged {s.six.worst.avg|signed}% against {s.six.best.avg|signed}% for November–April. Pre-election
+      Mays have been flat: {m.pre.avg|signed}% on average, {m.pre.pct_up}% up.
+  6:
+    blurb: >-
+      June is one of the quieter months: {m.all.avg|signed}% on average, {m.all.pct_up}% up. Pre-election
+      Junes average {m.pre.avg|signed}% but rose in only {m.pre.pct_up}% of years — a few big years carry
+      that average. Quad witching moves to Thursday because the Juneteenth holiday is observed Friday.
+  7:
+    blurb: >-
+      July has been the best month of the last twenty years by average — {m.last20.avg|signed}%, up in
+      {m.last20.pct_up}% of them — well above its long-run {m.all.avg|signed}%. Second-quarter earnings
+      season begins in the middle of the month.
+  8:
+    blurb: >-
+      August is middling over the long run ({m.all.avg|signed}%, {m.all.pct_up}% up) and has been weaker
+      in pre-election years, rising in fewer than half ({m.pre.pct_up}%). It also holds one of the deepest
+      monthly losses in the data: {m.all.worst.chg|signed}% in {m.all.worst.year}.
+  9:
+    blurb: >-
+      September is the weakest month in the data, down in more years than not ({m.all.pct_up}% up) and
+      averaging {m.all.avg|signed}%. Pre-election Septembers have been worse, up in only {m.pre.pct_up}% of
+      years. The week after September's quad witching has been the softest calendar window of the year.
+  10:
+    blurb: >-
+      October's reputation is worse than its record: up in {m.all.pct_up}% of years, {m.all.avg|signed}% on
+      average — though it holds both extremes, {m.all.best.chg|signed}% in {m.all.best.year} and
+      {m.all.worst.chg|signed}% in {m.all.worst.year}. It ends the weak six months. The Fed's October meeting
+      is a strategy session with no rate decision.
+  11:
+    blurb: >-
+      November has been the best month on average since {s.meta.first_year} ({m.all.avg|signed}%,
+      {m.all.pct_up}% up) and opens the best six months. Its first week has been the strongest calendar
+      window of the year. In {c.year} the year's last FOMC decision falls in November, not December.
+  12:
+    blurb: >-
+      One of the more dependable months — up in {m.all.pct_up}% of years — with the gains concentrated in
+      the second half and the year's best-known seasonal run at the very end. In {c.year} there is no
+      December FOMC meeting; the Fed moved its last decision to November.
+
+weeks:
+  1:
+    title: "First week of the year"
+    blurb: >-
+      New Year's Day falls on Friday, so {c.year} opens Monday. The first two sessions close the
+      Santa Claus Rally window that began in late December — a window that has
+      risen in {s.santa.pct_up}% of years. January's direction feeds the Barometer
+      ({s.jan_barometer.pct}% hit rate).
+  38:
+    title: "The softest week"
+    blurb: >-
+      The calendar window right after September quad witching has been the weakest of the year: the
+      S&P 500 rose in only *{w.pct_up}%* of years, averaging {w.avg|signed}% (rank {w.rank} of {w.of}).
+  44:
+    title: "The strongest week"
+    blurb: >-
+      The first week of November has been the best calendar window of the year: up in *{w.pct_up}%* of
+      years, averaging {w.avg|signed}% (rank {w.rank} of {w.of}). It is also the first week of the
+      November–April half.
+  47:
+    title: "Thanksgiving week"
+    blurb: >-
+      Measured from the prior Friday's close to the close on the Friday after Thanksgiving, the S&P 500
+      rose in *{s.holidays.thanksgiving.week.pct_up}%* of years (avg {s.holidays.thanksgiving.week.avg|signed}%).
+      The day before and the day after have both been reliable; the *Monday after* has been the weak spot,
+      up only {s.holidays.thanksgiving.monday_after.pct_up}% of years. The year's last FOMC decision came
+      the week before.
+    next: >-
+      The Monday after Thanksgiving has risen in only {s.holidays.thanksgiving.monday_after.pct_up}% of
+      years. December begins Wednesday.
+  52:
+    title: "The Santa Claus Rally"
+    blurb: >-
+      The window runs from the close on Dec 23 (Dec 24 is closed for Christmas) through the 2nd trading
+      day of January. Over those seven sessions the S&P 500 rose in *{s.santa.pct_up}%* of years, averaging
+      {s.santa.avg|signed}%. In the {s.santa.after_fail.n} years it closed lower, the following year averaged
+      {s.santa.after_fail.avg|signed}% ({s.santa.after_fail.pct_up}% up) versus {s.santa.after_success.avg|signed}%
+      after a winning window — a gap in averages, not in how often the year rose.
+    events: false
+    next: >-
+      Jan 3–4, 2028 close the rally window. January sets the Barometer — it has matched the year's
+      direction in {s.jan_barometer.pct}% of years.

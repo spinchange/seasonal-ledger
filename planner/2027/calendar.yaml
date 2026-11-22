@@ -1,0 +1,60 @@
+# 2027 market calendar — the only hand-maintained facts in the build.
+# Every entry must carry a source. Re-verify before each print run.
+
+year: 2027
+stats_window: [1950, 2025]   # complete calendar years of S&P 500 history used for every statistic
+
+# NYSE full-day closures (observed dates). Source: NYSE holiday calendar.
+holidays:
+  - {date: 2027-01-01, name: "New Year's Day", key: new_year}
+  - {date: 2027-01-18, name: "MLK Day", key: mlk}
+  - {date: 2027-02-15, name: "Presidents' Day", key: presidents}
+  - {date: 2027-03-26, name: "Good Friday", key: good_friday}
+  - {date: 2027-05-31, name: "Memorial Day", key: memorial}
+  - {date: 2027-06-18, name: "Juneteenth (obs.)", key: juneteenth}
+  - {date: 2027-07-05, name: "Independence Day (obs.)", key: july4}
+  - {date: 2027-09-06, name: "Labor Day", key: labor}
+  - {date: 2027-11-25, name: "Thanksgiving", key: thanksgiving}
+  - {date: 2027-12-24, name: "Christmas (obs.)", key: christmas}
+
+# 1:00 pm ET closes. Source: NYSE. (No early close Jul 2 or Dec 23 in 2027: the holidays are observed on adjacent weekdays.)
+early_closes:
+  - {date: 2027-11-26, note: "Early close 1:00 pm ET"}
+
+# FOMC. Source: Federal Reserve revised tentative 2027 schedule, press release 2026-11-12
+# (federalreserve.gov/newsevents/pressreleases/monetary20261112a.htm). Decision = second day.
+# sep: Summary of Economic Projections. VERIFY the Nov SEP flag against fomccalendars.htm.
+fomc:
+  - {date: 2027-01-27, kind: decision}
+  - {date: 2027-03-17, kind: decision, sep: true}
+  - {date: 2027-04-28, kind: decision}
+  - {date: 2027-06-09, kind: decision, sep: true}
+  - {date: 2027-07-28, kind: decision}
+  - {date: 2027-09-15, kind: decision, sep: true}
+  - {date: 2027-10-27, kind: strategy}
+  - {date: 2027-11-17, kind: decision}
+fomc_note: >-
+  The Fed's Nov 12, 2026 revision moved the last decision of the year from Dec 8 up to
+  Nov 17 and made Oct 27 a strategy-only meeting.
+
+# Monthly options expiration = 3rd Friday, moved to Thursday when Friday is a holiday.
+# Computed in pipeline/cal.py; listed here only as overrides.
+opex_overrides:
+  - {month: 6, date: 2027-06-17, note: "Juneteenth observed Friday"}
+
+# Earnings seasons — ESTIMATED. The big banks open each season about two weeks after
+# quarter end and most of the S&P 500 has reported ~5 weeks later. Replace `kickoff`
+# with the confirmed first big-bank report date once announced (JPM usually confirms ~4 weeks out).
+earnings_seasons:
+  - {quarter: "Q4 2026", start: 2027-01-12, end: 2027-02-12, kickoff: null}
+  - {quarter: "Q1 2027", start: 2027-04-13, end: 2027-05-14, kickoff: null}
+  - {quarter: "Q2 2027", start: 2027-07-13, end: 2027-08-13, kickoff: null}
+  - {quarter: "Q3 2027", start: 2027-10-12, end: 2027-11-12, kickoff: null}
+earnings_note: >-
+  Season windows are estimates until the first big-bank report dates are announced.
+  Mega-cap technology reports typically cluster in the last week of Jan, Apr, Jul and Oct.
+
+# Next-year dates referenced on the last pages.
+next_year:
+  first_fomc: null   # fill from fomccalendars.htm once the Fed publishes 2028 (pilot claimed Jan 25–26; unverified)
+  santa_close: 2028-01-04
