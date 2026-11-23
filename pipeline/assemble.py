@@ -103,6 +103,10 @@ def main(year: int) -> None:
             out.append({"kind": "early", "text": cal.early[d]["note"]})
         if d in cal.santa:
             out.append({"kind": "santa", "text": "Santa Claus Rally window"})
+        if d in cal.econ:
+            out.append({"kind": "econ", "text": cal.econ_text(d)})
+        if d in cal.f13:
+            out.append({"kind": "filing", "text": f"13F filings due ({cal.f13[d]['quarter']} holdings)"})
         if d in cal.auctions:
             secs = [a["security"] for a in cal.auctions[d]]
             out.append({"kind": "auction", "text": ("Treasury auction: " if len(secs) == 1 else "Treasury auctions: ")
@@ -148,6 +152,12 @@ def main(year: int) -> None:
                           + f" {DOW[d.weekday()]}" + (f" ({cal.opex[d]['note']})." if cal.opex[d]["note"] else "."))
         for s in kick:
             events.append(f"{s['quarter']} earnings season opens (est.).")
+        for d in wdays:
+            if d in cal.f13:
+                events.append(f"13F holdings filings for {cal.f13[d]['quarter']} due {DOW[d.weekday()]}.")
+        data = [f"{DOW[d.weekday()][:3]} " + ", ".join(r["label"] for r in cal.econ[d]) for d in wdays if d in cal.econ]
+        if data:
+            events.append("Data: " + "; ".join(data) + ".")
         if season and not kick:
             events.append(f"{season['quarter']} earnings season under way.")
         if hols:
@@ -286,6 +296,13 @@ def main(year: int) -> None:
                      "stat": S["earnings"]["seasons"][s["quarter"]]} for s in cal.seasons],
         "earnings_note": cal.cfg.get("earnings_note"),
         "auction_list": [f"{fmt_day(d)}: " + ", ".join(a["security"] for a in v) for d, v in sorted(cal.auctions.items())],
+        "econ_note": ("Economic releases are marked on the day pages with their Eastern release time: jobs report "
+                      "(nonfarm payrolls and the unemployment rate), CPI, PPI, JOLTS and the Employment Cost Index "
+                      "(BLS); GDP and PCE inflation (BEA); retail sales, housing starts, new home sales and durable "
+                      "goods (Census). Weekly jobless claims come out every Thursday at 8:30. Agencies can move a "
+                      "date; check the source before trading around one." if cal.econ else None),
+        "f13_note": ("Form 13F institutional holdings filings are due 45 days after each quarter ends (SEC): "
+                     + ", ".join(fmt_day(d) for d in sorted(cal.f13)) + "." if cal.f13 else None),
         "auction_note": (f"Treasury coupon auctions (notes, bonds, TIPS, FRNs) are marked on the day pages "
                          f"through {fmt_day(cal.auctions_through)}, from Treasury's tentative schedule. Later dates "
                          f"are published at each quarterly refunding (early Feb, May and Aug)."

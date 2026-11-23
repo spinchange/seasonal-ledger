@@ -191,6 +191,8 @@
      #P.fomc_list.join(linebreak())
      #v(4pt)
      #text(fill: mute, P.fomc_note)
+     #if P.at("econ_note", default: none) != none [#v(4pt) #text(fill: mute, P.econ_note)]
+     #if P.at("f13_note", default: none) != none [#v(4pt) #text(fill: mute, P.f13_note)]
      #if P.at("auction_note", default: none) != none [#v(4pt) #text(fill: mute, P.auction_note)]])
 }
 

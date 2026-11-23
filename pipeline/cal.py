@@ -44,6 +44,23 @@ class Calendar:
         for a in tdoc.get("auctions") or []:
             self.auctions.setdefault(a["date"], []).append(a)
         self.auctions_through = tdoc.get("covered_through")
+        # Major economic releases (BLS, BEA, Census; pipeline/fetch_econ.py), in display order per day.
+        ep = ROOT / "planner" / str(year) / "econ_releases.yaml"
+        edoc = yaml.safe_load(ep.read_text(encoding="utf-8")) if ep.exists() else {}
+        self.econ: dict[dt.date, list[dict]] = {}
+        for r in edoc.get("releases") or []:
+            self.econ.setdefault(r["date"], []).append(r)
+        self.econ_sources = edoc.get("sources") or {}
+        self.f13 = {f["date"]: f for f in self.cfg.get("filings_13f") or []}
+
+    def econ_text(self, d: dt.date) -> str | None:
+        """'8:30 CPI, Retail sales · 10:00 New home sales' (Eastern), or None."""
+        if d not in self.econ:
+            return None
+        by: dict[str, list[str]] = {}
+        for r in sorted(self.econ[d], key=lambda r: r["time"]):
+            by.setdefault(r["time"].lstrip("0"), []).append(r["label"])
+        return " · ".join(f"{t} {', '.join(v)}" for t, v in by.items())
 
     def month_trading(self, m: int) -> list[dt.date]:
         return [d for d in self.trading if d.month == m]

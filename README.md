@@ -3,9 +3,10 @@
 A trader's planner and trade journal for 2027. Every seasonal statistic in it is computed from
 S&P 500 history (1950–2025) by the open pipeline in this repo. Nothing in it is investment advice.
 
-**What's inside (~147 pages, US Letter):** cover · the year ahead (presidential cycle, month table) ·
+**What's inside (~148 pages, US Letter):** cover · the year ahead (presidential cycle, month table) ·
 year-at-a-glance market calendar (NYSE holidays, FOMC, opex, Santa Claus Rally, earnings seasons;
-Treasury coupon auctions on the day pages) ·
+13F filing deadlines; economic releases (jobs report, CPI, PPI, PCE, GDP, retail sales, housing
+starts and more, with release times) and Treasury coupon auctions on the day pages) ·
 earnings-season page · annual plan · for each month an opener (stats, trading-day chart, goals) and a
 month grid · for each of 52 weeks a day page (per-day history, events) and an ideas/trades/review page,
 with an earnings table in reporting season · quarterly reviews · year-end review · my dates (coupons, dividends, maturities) · trade log · methodology.
@@ -41,6 +42,7 @@ pipeline/fetch.py     ^GSPC daily closes -> data/raw/gspc.csv        (not commit
 pipeline/stats.py     every statistic    -> data/stats/2027.json     (committed)
 planner/2027/calendar.yaml   holidays, FOMC, opex overrides, earnings windows (hand-maintained, sourced)
 planner/2027/notes.yaml      editorial text; numbers only via {tokens}
+planner/2027/econ_releases.yaml      BLS/BEA/Census release dates, from pipeline/fetch_econ.py (BLS part copied by hand)
 planner/2027/treasury_auctions.yaml  coupon auctions, from pipeline/fetch_auctions.py (Treasury's tentative schedule)
 pipeline/assemble.py  stats + calendar + notes -> build/planner.json
 pipeline/sheet.py     build/planner.json -> build/seasonal-ledger-2027.xlsx (workbook)

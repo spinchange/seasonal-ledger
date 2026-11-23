@@ -77,6 +77,8 @@
     else if kind == "opex" { (orange-soft, orange.darken(25%)) }
     else if kind == "earn" { (rgb("#e8f1e8"), rgb("#2f6f3f")) }
     else if kind == "auction" { (rgb("#ece8f3"), rgb("#4a3f6b")) }
+    else if kind == "econ" { (rgb("#f1ece2"), rgb("#6b4f1d")) }
+    else if kind == "filing" { (rgb("#e3eef0"), rgb("#2b5b63")) }
     else { (blue-soft, ink) }
   box(fill: bg, inset: (x: 5pt, y: 2pt), radius: 2pt, text(size: 6.5pt, fill: fg, weight: "medium", t))
 }

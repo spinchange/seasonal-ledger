@@ -51,6 +51,7 @@ FILL_SANTA = PatternFill("solid", fgColor="F7E6D0")
 FILL_TODAY = PatternFill("solid", fgColor="FFE08A")
 FILL_AUCTION = PatternFill("solid", fgColor="ECE8F3")
 FILL_MINE = PatternFill("solid", fgColor="FBE3EC")
+FILL_ECON = PatternFill("solid", fgColor="F1ECE2")
 THIN = Side(style="thin", color="D0D0D0")
 BOX = Border(bottom=THIN)
 WRAP = Alignment(wrap_text=True, vertical="top")
@@ -157,8 +158,8 @@ def sheet_calendar(wb, P, cal, days):
     ws = wb.create_sheet("Calendar")
     cols = ["Date", "Day", "Week", "Market", "Trading-day slot", "% up", "Avg move", "n (years)",
             "FOMC", "Opex", "Earnings season", "Santa window", "Events", "History", "My notes",
-            "Treasury auction", "My dates (from the My Dates sheet)"]
-    header(ws, 1, cols, [13, 6, 6, 11, 22, 7, 9, 8, 15, 13, 13, 8, 40, 50, 40, 22, 34])
+            "Treasury auction", "My dates (from the My Dates sheet)", "Economic data (ET)"]
+    header(ws, 1, cols, [13, 6, 6, 11, 22, 7, 9, 8, 15, 13, 13, 8, 40, 50, 40, 22, 34, 34])
     ws.freeze_panes = "B2"
     r = 1
     last_week = None
@@ -208,16 +209,17 @@ def sheet_calendar(wb, P, cal, days):
         if d in cal.auctions:
             ws.cell(r, 16, ", ".join(a["security"] + (" (reopening)" if a.get("reopening") else "")
                                      for a in cal.auctions[d]))
+        ws.cell(r, 18, cal.econ_text(d))
         SD, SL = f"Schedule!$F$2:$F${SCHED_LAST}", f"Schedule!$G$2:$G${SCHED_LAST}"
         cnt = f"COUNTIFS({SD},$A{r})"
         ws.cell(r, 17, f'=IF({cnt}=0,"",INDEX({SL},MATCH($A{r},{SD},0))'
                        f'&IF({cnt}>1," (+"&({cnt}-1)&" more)",""))')
     last = r
-    style_body(ws, 2, last, 1, 17)
-    for row in ws.iter_rows(min_row=2, max_row=last, min_col=13, max_col=17):
+    style_body(ws, 2, last, 1, 18)
+    for row in ws.iter_rows(min_row=2, max_row=last, min_col=13, max_col=18):
         for c in row:
             c.alignment = WRAP
-    rng = f"A2:Q{last}"
+    rng = f"A2:R{last}"
     ws.conditional_formatting.add(rng, FormulaRule(formula=["$A2=TODAY()"], fill=FILL_TODAY, stopIfTrue=True))
     ws.conditional_formatting.add(rng, FormulaRule(formula=['OR($D2="Closed",$D2="Weekend")'], fill=FILL_CLOSED))
     ws.conditional_formatting.add(f"I2:I{last}", FormulaRule(formula=['$I2<>""'], fill=FILL_FOMC))
@@ -225,11 +227,12 @@ def sheet_calendar(wb, P, cal, days):
     ws.conditional_formatting.add(f"L2:L{last}", FormulaRule(formula=['$L2<>""'], fill=FILL_SANTA))
     ws.conditional_formatting.add(f"P2:P{last}", FormulaRule(formula=['$P2<>""'], fill=FILL_AUCTION))
     ws.conditional_formatting.add(f"Q2:Q{last}", FormulaRule(formula=['$Q2<>""'], fill=FILL_MINE))
+    ws.conditional_formatting.add(f"R2:R{last}", FormulaRule(formula=['$R2<>""'], fill=FILL_ECON))
     ws.conditional_formatting.add(f"G2:G{last}", ColorScaleRule(
         start_type="num", start_value=-0.004, start_color="E8A5A0",
         mid_type="num", mid_value=0, mid_color="FFFFFF",
         end_type="num", end_value=0.004, end_color="9CC5A1"))
-    ws.auto_filter.ref = f"A1:Q{last}"
+    ws.auto_filter.ref = f"A1:R{last}"
     return last
 
 
@@ -809,6 +812,10 @@ def sheet_readme(wb, P):
         ("Treasury auctions", "coupon auctions (notes, bonds, TIPS, FRNs) from Treasury's tentative "
          "schedule, in the Calendar's Treasury auction column. Treasury publishes about six months at a time, "
          "so later dates arrive with each quarterly refunding."),
+        ("Economic data", "release dates and Eastern times from BLS (jobs report, CPI, PPI, JOLTS, ECI), BEA "
+         "(GDP, PCE) and Census (retail sales, housing starts, new home sales, durable goods), in the Calendar's "
+         "Economic data column and in Events. Weekly jobless claims: every Thursday, 8:30. 13F filing deadlines "
+         "(SEC) are in Events."),
         ("Lists", "your setup tags and kinds of dates (they feed the dropdowns)."),
         ("Reference", "the presidential cycle, best and worst six months, January Barometer, Santa Claus "
          "Rally, holiday windows and earnings-season daily averages."),

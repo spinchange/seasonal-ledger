@@ -58,3 +58,14 @@ earnings_note: >-
 next_year:
   first_fomc: null   # fill from fomccalendars.htm once the Fed publishes 2028 (pilot claimed Jan 25–26; unverified)
   santa_close: 2028-01-04
+
+# Form 13F (institutional holdings) filing deadlines: 45 days after each calendar quarter ends;
+# a deadline on a Saturday, Sunday or federal holiday moves to the next business day.
+# Source: SEC, "Frequently Asked Questions About Form 13F", Question 25
+# (sec.gov/rules-regulations/staff-guidance/frequently-asked-questions-about-form-13f).
+# Raw day 45: Sun Feb 14 (Mon Feb 15 is Washington's Birthday) / Sat May 15 / Sat Aug 14 / Sun Nov 14.
+filings_13f:
+  - {date: 2027-02-16, quarter: "Q4 2026"}
+  - {date: 2027-05-17, quarter: "Q1 2027"}
+  - {date: 2027-08-16, quarter: "Q2 2027"}
+  - {date: 2027-11-15, quarter: "Q3 2027"}

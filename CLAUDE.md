@@ -22,5 +22,9 @@ Data-driven trader's planner (PDF) for 2027. Public repo; agents work on it loca
 - **Earnings:** replace estimated `kickoff` dates once JPM/big banks announce; consider per-season stats on the first two weeks vs. the rest.
 - **Verify** the Nov 17 FOMC SEP flag against federalreserve.gov/monetarypolicy/fomccalendars.htm; fill `next_year.first_fomc` once 2028 is published.
 - **Treasury auctions:** `python pipeline/fetch_auctions.py` after each quarterly refunding (early Feb, May, Aug 2027) extends `planner/2027/treasury_auctions.yaml`; currently covered through Apr 27. Commit the YAML (public data).
-- **Economic calendar** (CPI, jobs report) once BLS publishes its 2027 schedule — add to calendar.yaml with source, then badges.
+- **Economic releases** live in `planner/2027/econ_releases.yaml`. `python pipeline/fetch_econ.py` refreshes BEA and Census;
+  BLS refuses scripted downloads (403 — don't work around it), so its entries (jobs, CPI, PPI, JOLTS, ECI) are copied by hand
+  from bls.gov/schedule/news_release/<release>.htm and kept by the script. Re-check all three before a print run.
+  Not included yet (no official 2027 schedule found 2026-11-23): Conference Board LEI and consumer confidence, ISM PMIs,
+  UMich sentiment. Add one only with a published source.
 - Print production: cover art, binding margins (inner/outer), a PDF/X export.
