@@ -12,12 +12,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install pandas pyyaml python-dateutil
+      - run: pip install pandas pyyaml python-dateutil openpyxl
       - uses: typst-community/setup-typst@v4
         with:
           typst-version: "0.15.1"
       - run: python build.py --no-stats
       - uses: actions/upload-artifact@v4
         with:
-          name: seasonal-ledger-pdf
-          path: build/seasonal-ledger-*.pdf
+          name: seasonal-ledger
+          path: |
+            build/seasonal-ledger-*.pdf
+            build/seasonal-ledger-*.xlsx

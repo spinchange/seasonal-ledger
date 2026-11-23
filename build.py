@@ -4,6 +4,8 @@
     python build.py --fetch    # refresh ^GSPC from Yahoo first (needs network + yfinance)
     python build.py --no-stats # use committed data/stats/<year>.json (cloud / CI path)
     python build.py --png 1-9  # also render those pages to build/png/ for review
+
+Writes build/seasonal-ledger-<year>.pdf and build/seasonal-ledger-<year>.xlsx.
 """
 import argparse
 import subprocess
@@ -35,6 +37,7 @@ def main():
     elif not a.no_stats:
         print(f"note: {raw} missing; using committed data/stats/{a.year}.json")
     run(PY, "pipeline/assemble.py", str(a.year))
+    run(PY, "pipeline/sheet.py", str(a.year))
     typst = ["typst", "compile", "--root", ".", "--font-path", "fonts", "--ignore-system-fonts"]
     run(*typst, "typst/planner.typ", f"build/seasonal-ledger-{a.year}.pdf")
     if a.png:

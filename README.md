@@ -9,6 +9,13 @@ earnings-season page · annual plan · for each month an opener (stats, trading-
 month grid · for each of 52 weeks a day page (per-day history, events) and an ideas/trades/review page,
 with an earnings table in reporting season · quarterly reviews · year-end review · trade log · methodology.
 
+**The workbook** (`build/seasonal-ledger-2027.xlsx`) holds the same calendar and statistics as the PDF,
+with the journal made live: a trade log that calculates risk, P&L, R multiple and status, and picks up each
+entry day's history; a review that totals it by setup, month, side and earnings season; and a Today
+sheet showing the day, week, month, what's coming up and the next 14 days. It opens in Excel and converts to
+Google Sheets on upload to Drive. The statistics in it are values computed by the pipeline; the formulas
+are only the journal's. Keep your filled-in copy private.
+
 ## Build
 
 Requirements: Python 3.11+, [Typst](https://typst.app) 0.15.1. Fonts (Crimson Text, Fira Sans; SIL OFL)
@@ -16,13 +23,13 @@ are vendored in `fonts/`.
 
 ```sh
 pip install -r requirements.txt
-python build.py              # -> build/seasonal-ledger-2027.pdf
+python build.py              # -> build/seasonal-ledger-2027.pdf and .xlsx
 python build.py --fetch      # refresh S&P 500 prices first, then recompute stats
 python build.py --no-stats   # build from committed stats only (no price data needed)
 python build.py --png 1-9    # also render pages to build/png/ for review
 ```
 
-Every push builds the PDF in GitHub Actions; download it from the run's artifacts.
+Every push builds the PDF and workbook in GitHub Actions; download it from the run's artifacts.
 
 ## How it fits together
 
@@ -32,6 +39,7 @@ pipeline/stats.py     every statistic    -> data/stats/2027.json     (committed)
 planner/2027/calendar.yaml   holidays, FOMC, opex overrides, earnings windows (hand-maintained, sourced)
 planner/2027/notes.yaml      editorial text; numbers only via {tokens}
 pipeline/assemble.py  stats + calendar + notes -> build/planner.json
+pipeline/sheet.py     build/planner.json -> build/seasonal-ledger-2027.xlsx (workbook)
 typst/planner.typ     page order;  typst/pages.typ  page layouts;  typst/theme.typ  design tokens
 ```
 

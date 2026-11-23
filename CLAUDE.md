@@ -12,7 +12,10 @@ Data-driven trader's planner (PDF) for 2027. Public repo; agents work on it loca
 2. **Describe, don't predict.** No causal stories, no "will", no advice. Small samples get their n shown.
 3. **Calendar facts need a source** in `planner/2027/calendar.yaml` (NYSE, federalreserve.gov). Don't invent dates. Earnings-season windows are estimates and are labelled so until a confirmed big-bank date replaces `kickoff: null`.
 4. Never commit `data/raw/` (S&P price data is not ours to redistribute). Derived stats are fine.
-5. Notes text is Typst markup: escape `$ # _ *` and `~` (non-breaking space) when meant literally. `#expr;` eats the semicolon — write `#expr;;`.
+5. The workbook (`pipeline/sheet.py`) must work in Excel **and** Google Sheets: INDEX/MATCH, COUNTIFS,
+   SUMIFS, AVERAGEIFS, `_xlfn.MINIFS`, IFERROR only; no XLOOKUP/FILTER/spills, no Excel tables, bounded
+   ranges (not `A:A`). Statistics go in as values; formulas are for the journal. Never commit a filled-in copy.
+6. Notes text is Typst markup: escape `$ # _ *` and `~` (non-breaking space) when meant literally. `#expr;` eats the semicolon — write `#expr;;`.
 
 ## Open work (good tasks for an agent)
 - **Week blurbs:** 47 of 52 weeks use the auto blurb from `assemble.py`. Write hand blurbs in `notes.yaml` (`weeks: <n>: {title, blurb, next}`) for notable weeks — FOMC weeks, opex weeks, month-ends, quarter-ends, holiday weeks. Tokens only; events are appended automatically.
