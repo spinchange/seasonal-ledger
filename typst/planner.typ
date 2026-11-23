@@ -47,6 +47,8 @@
 
 #pagebreak(to: "even")
 #year-review(P)
+#pagebreak()
+#my-dates(P)
 #for k in range(6) {
   pagebreak()
   trade-log(P, k)

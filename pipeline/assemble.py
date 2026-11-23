@@ -103,6 +103,10 @@ def main(year: int) -> None:
             out.append({"kind": "early", "text": cal.early[d]["note"]})
         if d in cal.santa:
             out.append({"kind": "santa", "text": "Santa Claus Rally window"})
+        if d in cal.auctions:
+            secs = [a["security"] for a in cal.auctions[d]]
+            out.append({"kind": "auction", "text": ("Treasury auction: " if len(secs) == 1 else "Treasury auctions: ")
+                        + ", ".join(secs)})
         for s in cal.seasons:
             if d == (s.get("kickoff") or s["start"]):
                 out.append({"kind": "earn", "text": f"{s['quarter']} earnings season opens" + ("" if s.get("kickoff") else " (est.)")})
@@ -281,6 +285,11 @@ def main(year: int) -> None:
                      "kickoff": fmt_day(s["kickoff"]) if s.get("kickoff") else None,
                      "stat": S["earnings"]["seasons"][s["quarter"]]} for s in cal.seasons],
         "earnings_note": cal.cfg.get("earnings_note"),
+        "auction_list": [f"{fmt_day(d)}: " + ", ".join(a["security"] for a in v) for d, v in sorted(cal.auctions.items())],
+        "auction_note": (f"Treasury coupon auctions (notes, bonds, TIPS, FRNs) are marked on the day pages "
+                         f"through {fmt_day(cal.auctions_through)}, from Treasury's tentative schedule. Later dates "
+                         f"are published at each quarterly refunding (early Feb, May and Aug)."
+                         if cal.auctions_through else None),
         "notes": {k: fill(v, {"s": S, "c": cal.cfg}) for k, v in (notes.get("pages") or {}).items()},
     }
     dest = ROOT / "build" / "planner.json"

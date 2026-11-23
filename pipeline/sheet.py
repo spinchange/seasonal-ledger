@@ -49,6 +49,8 @@ FILL_FOMC = PatternFill("solid", fgColor="D6E2F3")
 FILL_SEASON = PatternFill("solid", fgColor="E3F1E0")
 FILL_SANTA = PatternFill("solid", fgColor="F7E6D0")
 FILL_TODAY = PatternFill("solid", fgColor="FFE08A")
+FILL_AUCTION = PatternFill("solid", fgColor="ECE8F3")
+FILL_MINE = PatternFill("solid", fgColor="FBE3EC")
 THIN = Side(style="thin", color="D0D0D0")
 BOX = Border(bottom=THIN)
 WRAP = Alignment(wrap_text=True, vertical="top")
@@ -64,6 +66,11 @@ DATE_Y = "mmm d, yyyy"
 CAL_LAST = 366          # last Calendar row; set from the year in main()
 TRADE_ROWS = 500          # Trades!5:504
 WATCH_ROWS = 60
+MY_ROWS, MY_FIRST = 40, 6     # 'My Dates'!6:45 are the inputs
+MAX_REPEATS = 12              # monthly is the most frequent repeat: 12 dates a year
+SCHED_LAST = 1 + MY_ROWS * MAX_REPEATS   # Schedule!2:481
+REPEATS = [("Once", 0), ("Monthly", 1), ("Quarterly", 3), ("Semiannual", 6), ("Annual", 12)]
+MY_EVENTS = ["Coupon", "Ex-dividend", "Dividend paid", "Distribution", "Maturity", "Call date", "Other"]
 FIRST_TRADE, LAST_TRADE = 5, 5 + TRADE_ROWS - 1
 MONTHS = ["January", "February", "March", "April", "May", "June", "July",
           "August", "September", "October", "November", "December"]
@@ -149,8 +156,9 @@ def load(year: int):
 def sheet_calendar(wb, P, cal, days):
     ws = wb.create_sheet("Calendar")
     cols = ["Date", "Day", "Week", "Market", "Trading-day slot", "% up", "Avg move", "n (years)",
-            "FOMC", "Opex", "Earnings season", "Santa window", "Events", "History", "My notes"]
-    header(ws, 1, cols, [13, 6, 6, 11, 22, 7, 9, 8, 15, 13, 13, 8, 40, 50, 40])
+            "FOMC", "Opex", "Earnings season", "Santa window", "Events", "History", "My notes",
+            "Treasury auction", "My dates (from the My Dates sheet)"]
+    header(ws, 1, cols, [13, 6, 6, 11, 22, 7, 9, 8, 15, 13, 13, 8, 40, 50, 40, 22, 34])
     ws.freeze_panes = "B2"
     r = 1
     last_week = None
@@ -197,22 +205,31 @@ def sheet_calendar(wb, P, cal, days):
             ws.cell(r, 12, "Y")
         ws.cell(r, 13, "; ".join(dict.fromkeys(events)) or None)
         ws.cell(r, 15).fill = FILL_INPUT
+        if d in cal.auctions:
+            ws.cell(r, 16, ", ".join(a["security"] + (" (reopening)" if a.get("reopening") else "")
+                                     for a in cal.auctions[d]))
+        SD, SL = f"Schedule!$F$2:$F${SCHED_LAST}", f"Schedule!$G$2:$G${SCHED_LAST}"
+        cnt = f"COUNTIFS({SD},$A{r})"
+        ws.cell(r, 17, f'=IF({cnt}=0,"",INDEX({SL},MATCH($A{r},{SD},0))'
+                       f'&IF({cnt}>1," (+"&({cnt}-1)&" more)",""))')
     last = r
-    style_body(ws, 2, last, 1, 15)
-    for row in ws.iter_rows(min_row=2, max_row=last, min_col=13, max_col=15):
+    style_body(ws, 2, last, 1, 17)
+    for row in ws.iter_rows(min_row=2, max_row=last, min_col=13, max_col=17):
         for c in row:
             c.alignment = WRAP
-    rng = f"A2:O{last}"
+    rng = f"A2:Q{last}"
     ws.conditional_formatting.add(rng, FormulaRule(formula=["$A2=TODAY()"], fill=FILL_TODAY, stopIfTrue=True))
     ws.conditional_formatting.add(rng, FormulaRule(formula=['OR($D2="Closed",$D2="Weekend")'], fill=FILL_CLOSED))
     ws.conditional_formatting.add(f"I2:I{last}", FormulaRule(formula=['$I2<>""'], fill=FILL_FOMC))
     ws.conditional_formatting.add(f"K2:K{last}", FormulaRule(formula=['$K2<>""'], fill=FILL_SEASON))
     ws.conditional_formatting.add(f"L2:L{last}", FormulaRule(formula=['$L2<>""'], fill=FILL_SANTA))
+    ws.conditional_formatting.add(f"P2:P{last}", FormulaRule(formula=['$P2<>""'], fill=FILL_AUCTION))
+    ws.conditional_formatting.add(f"Q2:Q{last}", FormulaRule(formula=['$Q2<>""'], fill=FILL_MINE))
     ws.conditional_formatting.add(f"G2:G{last}", ColorScaleRule(
         start_type="num", start_value=-0.004, start_color="E8A5A0",
         mid_type="num", mid_value=0, mid_color="FFFFFF",
         end_type="num", end_value=0.004, end_color="9CC5A1"))
-    ws.auto_filter.ref = f"A1:O{last}"
+    ws.auto_filter.ref = f"A1:Q{last}"
     return last
 
 
@@ -255,8 +272,8 @@ def sheet_months(wb, P):
     S = P["stats"]["months"]
     cols = ["#", "Month", "Sessions in 2027", "Avg (all years)", "% up", "Median", "Best", "Worst",
             "Pre-election avg", "% up", "n", "Last-20 avg", "% up", "What history shows",
-            "My goal", "Closed trades", "Realized P&L"]
-    header(ws, 1, cols, [4, 11, 9, 9, 7, 8, 14, 14, 9, 7, 5, 9, 7, 70, 35, 9, 12])
+            "My goal", "Closed trades", "Realized P&L", "My scheduled payments"]
+    header(ws, 1, cols, [4, 11, 9, 9, 7, 8, 14, 14, 9, 7, 5, 9, 7, 70, 35, 9, 12, 12])
     ws.freeze_panes = "C2"
     for i, m in enumerate(P["months"], start=2):
         s = S[str(m["m"])]
@@ -277,11 +294,13 @@ def sheet_months(wb, P):
             ws.cell(i, j).number_format = PCT0
         ws.cell(i, 15).fill = FILL_INPUT
         ws.cell(i, 17).number_format = MONEY
-    style_body(ws, 2, 13, 1, 17)
+        ws.cell(i, 18, f"=SUMIFS(Schedule!$H$2:$H${SCHED_LAST},Schedule!$I$2:$I${SCHED_LAST},A{i})"
+                ).number_format = MONEY
+    style_body(ws, 2, 13, 1, 18)
     for row in ws.iter_rows(min_row=2, max_row=13, min_col=14, max_col=15):
         for c in row:
             c.alignment = WRAP
-    ws.conditional_formatting.add("A2:Q13", FormulaRule(formula=["MONTH(TODAY())=$A2"], fill=FILL_TODAY))
+    ws.conditional_formatting.add("A2:R13", FormulaRule(formula=["MONTH(TODAY())=$A2"], fill=FILL_TODAY))
     put(ws, "A15", "Pre-election = years divisible by 4 with remainder 3 (2027 is one). "
         "Best/worst are calendar-month changes. Closed trades and P&L total the Trades sheet by close month.",
         F_ITAL)
@@ -424,6 +443,14 @@ def sheet_lists(wb):
     tags = ["Breakout", "Pullback", "Earnings", "Seasonal", "Mean reversion", "Trend follow", "Other"]
     for i in range(30):
         c = ws.cell(5 + i, 1, tags[i] if i < len(tags) else None)
+        c.fill, c.font, c.border = FILL_INPUT, F_BODY, BOX
+    header(ws, 4, ["Repeats", "Months apart"], [14, 13], col=3)
+    for i, (name, m) in enumerate(REPEATS, start=5):
+        ws.cell(i, 3, name).font = F_BODY
+        ws.cell(i, 4, m).font = F_BODY
+    header(ws, 4, ["My date kinds"], [18], col=6)
+    for i in range(5, 20):
+        c = ws.cell(i, 6, MY_EVENTS[i - 5] if i - 5 < len(MY_EVENTS) else None)
         c.fill, c.font, c.border = FILL_INPUT, F_BODY, BOX
     return 5
 
@@ -603,36 +630,37 @@ def sheet_today(wb, P, cal_last):
     day = [("Market", at("D"), None), ("Trading-day slot", at("E"), None),
            ("Up in this slot", atn("F"), PCT0), ("Average move", atn("G"), SIGNED2),
            ("Years of data (n)", atn("H"), "0"), ("Events", at("M"), None),
+           ("Treasury auction", at("P"), None), ("My dates", at("Q"), None),
            ("History", at("N"), None), ("My notes (Calendar sheet)", at("O"), None)]
     for i, (lab, f, fmt) in enumerate(day, start=8):
         put(ws, f"A{i}", lab, F_LABEL)
         put(ws, f"B{i}", f, F_BODY, fmt, align=Alignment(wrap_text=True, vertical="top"))
         ws.merge_cells(f"B{i}:G{i}")
-    for i in (13, 14):
+    for i in (13, 16):
         ws.row_dimensions[i].height = 28
 
-    put(ws, "A17", "The week", F_H2)
-    put(ws, "I17", '=IF($I$5="","",INDEX(' + CAL("C") + ',$I$5))', F_MUTED)
-    wk = lambda c: f'=IF(N($I$17)=0,"",IFERROR(INDEX(Weeks!${c}$2:${c}$53,MATCH($I$17,Weeks!$A$2:$A$53,0)),""))'  # noqa: E731
+    put(ws, "A19", "The week", F_H2)
+    put(ws, "I19", '=IF($I$5="","",INDEX(' + CAL("C") + ',$I$5))', F_MUTED)
+    wk = lambda c: f'=IF(N($I$19)=0,"",IFERROR(INDEX(Weeks!${c}$2:${c}$53,MATCH($I$19,Weeks!$A$2:$A$53,0)),""))'  # noqa: E731
     week = [("Week", wk("A"), "0"), ("Title", wk("D"), None), ("Up in this week", wk("F"), PCT0),
             ("Average week", wk("G"), SIGNED2), ("Rank of 52", wk("I"), "0"), ("Events", wk("L"), None),
             ("My plan (Weeks sheet)", wk("M"), None)]
-    for i, (lab, f, fmt) in enumerate(week, start=18):
+    for i, (lab, f, fmt) in enumerate(week, start=20):
         put(ws, f"A{i}", lab, F_LABEL)
         put(ws, f"B{i}", f, F_BODY, fmt, align=Alignment(wrap_text=True, vertical="top"))
         ws.merge_cells(f"B{i}:G{i}")
-    ws.row_dimensions[23].height = 28
+    ws.row_dimensions[25].height = 28
 
-    put(ws, "A26", "The month", F_H2)
+    put(ws, "A28", "The month", F_H2)
     mo = lambda c: f'=IF($B$5="","",INDEX(Months!${c}$2:${c}$13,MONTH($B$5)))'  # noqa: E731
     month = [("Month", mo("B"), None), ("Average (all years)", mo("D"), SIGNED2), ("Up", mo("E"), PCT0),
              ("Pre-election years", mo("I"), SIGNED2), ("Closed trades so far", mo("P"), "0"),
-             ("Realized P&L", mo("Q"), MONEY)]
-    for i, (lab, f, fmt) in enumerate(month, start=27):
+             ("Realized P&L", mo("Q"), MONEY), ("My scheduled payments", mo("R"), MONEY)]
+    for i, (lab, f, fmt) in enumerate(month, start=29):
         put(ws, f"A{i}", lab, F_LABEL)
         put(ws, f"B{i}", f, F_BODY, fmt)
 
-    put(ws, "D26", "Coming up", F_H2)
+    put(ws, "D28", "Coming up", F_H2)
     nxt = lambda crit_col, crit: (  # noqa: E731
         f'=IFERROR(1/(1/_xlfn.MINIFS({CAL("A")},{CAL(crit_col)},{crit},{CAL("A")},">="&$B$5)),"none left")')
     upcoming = [("FOMC decision", nxt("I", '"Decision*"')),
@@ -640,16 +668,22 @@ def sheet_today(wb, P, cal_last):
                 ("Market holiday", nxt("D", '"Closed"')),
                 ("Earnings season opens",
                  f'=IFERROR(1/(1/_xlfn.MINIFS(Earnings!$B$5:$B$8,Earnings!$B$5:$B$8,">="&$B$5)),"none left")'),
-                ("Santa Claus Rally window", nxt("L", '"Y"'))]
-    for i, (lab, f) in enumerate(upcoming, start=27):
+                ("Santa Claus Rally window", nxt("L", '"Y"')),
+                ("Treasury coupon auction", nxt("P", '"*-yr*"')),
+                ("My next date",
+                 f'=IFERROR(1/(1/_xlfn.MINIFS(Schedule!$F$2:$F${SCHED_LAST},Schedule!$F$2:$F${SCHED_LAST},'
+                 f'">="&$B$5)),"none")')]
+    for i, (lab, f) in enumerate(upcoming, start=29):
         put(ws, f"D{i}", lab, F_LABEL)
         put(ws, f"E{i}", f, F_BODY, DATE)
         put(ws, f"F{i}", f'=IF(ISNUMBER(E{i}),E{i}-$B$5&" days","")', F_MUTED)
+    put(ws, "G34", f'=IF(ISNUMBER(E34),INDEX({CAL("P")},MATCH(E34,{CAL("A")},0)),"")', F_MUTED)
+    put(ws, "G35", f'=IF(ISNUMBER(E35),INDEX({CAL("Q")},MATCH(E35,{CAL("A")},0)),"")', F_MUTED)
 
-    put(ws, "A35", "The next 14 days", F_H2)
-    header(ws, 36, ["Date", "Market", "Up in slot", "Avg move", "", "", "Events"])
+    put(ws, "A37", "The next 14 days", F_H2)
+    header(ws, 38, ["Date", "Market", "Up in slot", "Avg move", "My dates", "", "Events"])
     for k in range(14):
-        i = 37 + k
+        i = 39 + k
         idx = f"$I$5+{k}"
         g = lambda c: f'=IF(OR($I$5="",{idx}>{cal_last - 1}),"",INDEX({CAL(c)},{idx}))'  # noqa: E731
         put(ws, f"A{i}", g("A"), F_BODY, DATE)
@@ -658,14 +692,86 @@ def sheet_today(wb, P, cal_last):
             f'INDEX({CAL("F")},{idx})))', F_BODY, PCT0)
         put(ws, f"D{i}", f'=IF(OR($I$5="",{idx}>{cal_last - 1}),"",IF(INDEX({CAL("G")},{idx})="","",'
             f'INDEX({CAL("G")},{idx})))', F_BODY, SIGNED2)
+        put(ws, f"E{i}", f'=IF(OR($I$5="",{idx}>{cal_last - 1}),"",INDEX({CAL("Q")},{idx})&"")', F_BODY)
+        ws.merge_cells(f"E{i}:F{i}")
         put(ws, f"G{i}", f'=IF(OR($I$5="",{idx}>{cal_last - 1}),"",INDEX({CAL("M")},{idx})&"")', F_BODY)
         for c in "ABCDEFG":
             ws[f"{c}{i}"].border = BOX
-    ws.conditional_formatting.add("A37:G50", FormulaRule(
-        formula=['OR($B37="Closed",$B37="Weekend")'], fill=FILL_CLOSED))
-    ws.conditional_formatting.add("A37:G50", FormulaRule(formula=["$A37=$B$5"], fill=FILL_TODAY))
-    put(ws, "A52", f"Statistics: {P['stats']['meta']['series']}, {P['window']}. "
+    ws.conditional_formatting.add("A39:G52", FormulaRule(
+        formula=['OR($B39="Closed",$B39="Weekend")'], fill=FILL_CLOSED))
+    ws.conditional_formatting.add("A39:G52", FormulaRule(formula=["$A39=$B$5"], fill=FILL_TODAY))
+    put(ws, "A54", f"Statistics: {P['stats']['meta']['series']}, {P['window']}. "
         "They describe the past and predict nothing. Not investment advice.", F_ITAL)
+
+
+def sheet_mydates(wb, year):
+    """Your own securities: coupons, dividends, maturities. One row per stream; repeats expand on Schedule."""
+    ws = wb.create_sheet("My Dates")
+    title(ws, "My dates: coupons, dividends, maturities",
+          "One row per payment stream. Give the first date in the year and how often it repeats; "
+          "the Schedule sheet lists every date, and they appear on the Calendar and Today sheets.")
+    put(ws, "A3", "Example: UST 4.25% 2031 | Coupon | Feb 15, 2027 | Semiannual | Feb 15, 2031 | "
+        "2,125.00   ·   XYZ | Ex-dividend | Mar 10, 2027 | Quarterly | (blank) | 48.00", F_ITAL)
+    put(ws, "A4", "Dates are the scheduled ones: a payment due on a weekend or holiday usually arrives the "
+        "next business day. Ex-dividend dates after the first are a guide until the company declares them.",
+        F_ITAL)
+    cols = ["Security", "What", f"First date in {year}", "Repeats", "Last date (optional)",
+            "Amount per payment", "Notes", f"Dates in {year}", f"Total {year}"]
+    header(ws, 5, cols, [24, 14, 14, 12, 14, 13, 36, 9, 12])
+    ws.freeze_panes = f"B{MY_FIRST}"
+    last = MY_FIRST + MY_ROWS - 1
+    for r in range(MY_FIRST, last + 1):
+        for j in range(1, 8):
+            ws.cell(r, j).fill = FILL_INPUT
+        ws.cell(r, 3).number_format = ws.cell(r, 5).number_format = DATE_Y
+        ws.cell(r, 6).number_format = MONEY
+        n = r - MY_FIRST + 1
+        ws.cell(r, 8, f'=IF(A{r}="","",COUNTIFS(Schedule!$B$2:$B${SCHED_LAST},{n},'
+                      f'Schedule!$F$2:$F${SCHED_LAST},">0"))')
+        ws.cell(r, 9, f'=IF(A{r}="","",SUMIFS(Schedule!$H$2:$H${SCHED_LAST},Schedule!$B$2:$B${SCHED_LAST},{n}))'
+                ).number_format = MONEY
+    style_body(ws, MY_FIRST, last, 1, 9)
+    put(ws, f"G{last + 2}", "Total scheduled", F_LABEL)
+    put(ws, f"I{last + 2}", f"=SUM(I{MY_FIRST}:I{last})", F_LABEL, MONEY)
+    what = DataValidation(type="list", formula1="=Lists!$F$5:$F$19", allow_blank=True)
+    rep = DataValidation(type="list", formula1=f"=Lists!$C$5:$C${4 + len(REPEATS)}", allow_blank=True)
+    dates = DataValidation(type="date", operator="between", formula1="DATE(2000,1,1)",
+                           formula2="DATE(2100,12,31)", allow_blank=True)
+    for dv in (what, rep, dates):
+        ws.add_data_validation(dv)
+    what.add(f"B{MY_FIRST}:B{last}")
+    rep.add(f"D{MY_FIRST}:D{last}")
+    dates.add(f"C{MY_FIRST}:C{last}")
+    dates.add(f"E{MY_FIRST}:E{last}")
+
+
+def sheet_schedule(wb, year):
+    """Every date the My Dates rows produce in the year: entry n, repeat k -> EDATE(first, k * months)."""
+    ws = wb.create_sheet("Schedule")
+    title_row = ["Repeat", "Entry", "First date", "Months apart", "Ends", "Date", "Label", "Amount", "Month"]
+    header(ws, 1, title_row, [7, 6, 13, 8, 13, 13, 36, 12, 7])
+    ws.freeze_panes = "A2"
+    MD = lambda c: f"'My Dates'!${c}${MY_FIRST}:${c}${MY_FIRST + MY_ROWS - 1}"  # noqa: E731
+    y0, y1 = f"DATE({year},1,1)", f"DATE({year},12,31)"
+    r = 1
+    for n in range(1, MY_ROWS + 1):
+        for k in range(MAX_REPEATS):
+            r += 1
+            ws.cell(r, 1, k)
+            ws.cell(r, 2, n)
+            src = lambda c: f"INDEX({MD(c)},$B{r})"  # noqa: E731
+            ws.cell(r, 3, f'=IF(OR({src("A")}="",{src("C")}=""),"",{src("C")})').number_format = DATE_Y
+            ws.cell(r, 4, f'=IF(C{r}="","",IFERROR(INDEX(Lists!$D$5:$D${4 + len(REPEATS)},'
+                          f'MATCH({src("D")},Lists!$C$5:$C${4 + len(REPEATS)},0)),0))')
+            ws.cell(r, 5, f'=IF(C{r}="","",IF({src("E")}="",{y1},MIN({src("E")},{y1})))').number_format = DATE_Y
+            ws.cell(r, 6, f'=IF(OR(C{r}="",AND(D{r}=0,A{r}>0)),"",IF(OR(EDATE(C{r},A{r}*D{r})>E{r},'
+                          f'EDATE(C{r},A{r}*D{r})<{y0}),"",EDATE(C{r},A{r}*D{r})))').number_format = DATE
+            ws.cell(r, 7, f'=IF(F{r}="","",{src("A")}&": "&LOWER({src("B")}))')
+            ws.cell(r, 8, f'=IF(OR(F{r}="",{src("F")}=""),"",{src("F")})').number_format = MONEY
+            ws.cell(r, 9, f'=IF(F{r}="","",MONTH(F{r}))')
+    style_body(ws, 2, r, 1, 9)
+    ws.auto_filter.ref = f"A1:I{r}"
+    put(ws, "K1", "Calculated from My Dates; nothing to type here.", F_ITAL)
 
 
 def cal_days_iter(P):
@@ -697,7 +803,13 @@ def sheet_readme(wb, P):
          "and status calculate, and each trade picks up its entry day's history from the Calendar."),
         ("Review", "totals the Trades sheet: the year so far, then by setup, close month, side, earnings "
          "season and the entry day's history."),
-        ("Lists", "your setup tags (they feed the Trades dropdown and the Review)."),
+        ("My Dates", "your own securities: coupons, dividends, maturities. One row per payment stream with "
+         "its first date and how often it repeats; every date then shows on the Calendar and Today sheets, "
+         "and the Months sheet totals the payments. Schedule is the worked-out list."),
+        ("Treasury auctions", "coupon auctions (notes, bonds, TIPS, FRNs) from Treasury's tentative "
+         "schedule, in the Calendar's Treasury auction column. Treasury publishes about six months at a time, "
+         "so later dates arrive with each quarterly refunding."),
+        ("Lists", "your setup tags and kinds of dates (they feed the dropdowns)."),
         ("Reference", "the presidential cycle, best and worst six months, January Barometer, Santa Claus "
          "Rally, holiday windows and earnings-season daily averages."),
         ("Google Sheets", "upload the file to Drive and open it with Google Sheets (or set Drive to convert "
@@ -744,11 +856,13 @@ def main():
     sheet_trades(wb, tag_first)
     sheet_review(wb, tag_first)
     sheet_reference(wb, P)
-    order = ["Today", "How to use", "Calendar", "Weeks", "Months", "Earnings", "Trades", "Review",
-             "Reference", "Lists"]
+    sheet_mydates(wb, year)
+    sheet_schedule(wb, year)
+    order = ["Today", "How to use", "Calendar", "Weeks", "Months", "Earnings", "My Dates", "Trades", "Review",
+             "Reference", "Schedule", "Lists"]
     wb._sheets = [wb[n] for n in order]
     wb.active = 0
-    colors = {"Today": ORANGE, "Trades": ORANGE, "Review": ORANGE}
+    colors = {"Today": ORANGE, "Trades": ORANGE, "Review": ORANGE, "My Dates": ORANGE}
     for ws in wb.worksheets:
         ws.sheet_properties.tabColor = colors.get(ws.title, BLUE)
         ws.sheet_view.showGridLines = ws.title in ("Calendar", "Trades")

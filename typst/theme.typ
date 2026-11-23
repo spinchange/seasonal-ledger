@@ -76,6 +76,7 @@
     else if kind == "fomc" { (blue, white) }
     else if kind == "opex" { (orange-soft, orange.darken(25%)) }
     else if kind == "earn" { (rgb("#e8f1e8"), rgb("#2f6f3f")) }
+    else if kind == "auction" { (rgb("#ece8f3"), rgb("#4a3f6b")) }
     else { (blue-soft, ink) }
   box(fill: bg, inset: (x: 5pt, y: 2pt), radius: 2pt, text(size: 6.5pt, fill: fg, weight: "medium", t))
 }

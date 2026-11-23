@@ -190,7 +190,8 @@
      #set text(size: 8pt)
      #P.fomc_list.join(linebreak())
      #v(4pt)
-     #text(fill: mute, P.fomc_note)])
+     #text(fill: mute, P.fomc_note)
+     #if P.at("auction_note", default: none) != none [#v(4pt) #text(fill: mute, P.auction_note)]])
 }
 
 #let earnings-page(P) = {
@@ -378,6 +379,17 @@
     ..("Opened", "Ticker", "P / R", "Setup · seasonal tag", "Entry", "Exit", "Days", "Return", "R-multiple").map(x => text(weight: "semibold", x)),
     ..range((if k == 0 { 25 } else { 28 }) * 9).map(_ => []))
   if k == 0 { small[P / R = paper or real. Tag each trade with the seasonal context it was opened in (e.g., "pre-election", "best-six", "Santa", "opex wk", "earnings") so the year-end review can sort by it.] }
+}
+
+#let my-dates(P) = {
+  header("My dates", [Coupons, dividends, maturities · #P.year])
+  par[One line per payment stream: the security, what it pays, and every date it falls in #P.year. Copy the dates onto the day pages as they come up; a payment due on a weekend or holiday usually arrives the next business day.]
+  v(2pt)
+  set text(size: 7.5pt)
+  table(rows: (auto, 22pt), columns: (1.6fr, 1fr, 3.4fr, 0.9fr, 1.6fr),
+    stroke: (x, y) => (bottom: if y == 0 { 0.8pt + ink } else { 0.4pt + rule-c }), inset: (y: 8.3pt, x: 3pt),
+    ..("Security", "Type", "Dates in " + str(P.year), "Amount", "Notes").map(x => text(weight: "semibold", x)),
+    ..range(27 * 5).map(_ => []))
 }
 
 #let methodology(P) = {
