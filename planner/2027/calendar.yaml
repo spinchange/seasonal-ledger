@@ -59,6 +59,15 @@ next_year:
   first_fomc: null   # fill from fomccalendars.htm once the Fed publishes 2028 (pilot claimed Jan 25–26; unverified)
   santa_close: 2028-01-04
 
+# VIX options and futures expiration (final settlement), computed in pipeline/cal.py from Cboe's rule:
+# the Wednesday 30 days before the third Friday of the following month; if that Wednesday or that
+# Friday is a Cboe Options holiday, the business day before the Wednesday.
+# Source: Cboe VXM contract specifications (cdn.cboe.com/resources/futures/VXM_Contract_Specifications.pdf).
+# vix_listed: expirations Cboe already lists (cboe.com/tradable-products/vix/vix-futures, 2026-11-23);
+# cal.py checks its computed dates against them and fails the build on a mismatch.
+vix_holidays_next_year: [2028-01-17]   # Cboe/NYSE holidays in Jan 2028 (MLK Day) for the Dec expiry check
+vix_listed: [2027-01-20, 2027-02-17, 2027-03-17, 2027-04-21, 2027-05-18, 2027-06-16, 2027-07-21]
+
 # Form 13F (institutional holdings) filing deadlines: 45 days after each calendar quarter ends;
 # a deadline on a Saturday, Sunday or federal holiday moves to the next business day.
 # Source: SEC, "Frequently Asked Questions About Form 13F", Question 25

@@ -199,6 +199,8 @@ def sheet_calendar(wb, P, cal, days):
         o = cal.opex.get(d)
         if o:
             ws.cell(r, 10, "Opex: quad witching" if o["quad"] else "Opex")
+        elif d in cal.vix:
+            ws.cell(r, 10, "VIX expiration")
         s = cal.season_for(d)
         if s:
             ws.cell(r, 11, s["quarter"])

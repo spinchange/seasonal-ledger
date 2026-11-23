@@ -52,6 +52,20 @@ class Calendar:
             self.econ.setdefault(r["date"], []).append(r)
         self.econ_sources = edoc.get("sources") or {}
         self.f13 = {f["date"]: f for f in self.cfg.get("filings_13f") or []}
+        # VIX expiration (rule and source in calendar.yaml).
+        hol = set(self.holidays) | set(self.cfg.get("vix_holidays_next_year") or [])
+        self.vix = {}
+        for m in range(1, 13):
+            fri = third_friday(year + m // 12, m % 12 + 1)
+            wed = fri - dt.timedelta(days=30)
+            d = wed
+            if wed in hol or fri in hol:
+                d -= dt.timedelta(days=1)
+                while d.weekday() >= 5 or d in hol:
+                    d -= dt.timedelta(days=1)
+            self.vix[d] = {"month": m, "moved": d != wed}
+        for d in self.cfg.get("vix_listed") or []:
+            assert d in self.vix, f"VIX: Cboe lists {d}, the rule gives {sorted(self.vix)}"
 
     def econ_text(self, d: dt.date) -> str | None:
         """'8:30 CPI, Retail sales · 10:00 New home sales' (Eastern), or None."""

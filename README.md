@@ -5,7 +5,7 @@ S&P 500 history (1950–2025) by the open pipeline in this repo. Nothing in it i
 
 **What's inside (~148 pages, US Letter):** cover · the year ahead (presidential cycle, month table) ·
 year-at-a-glance market calendar (NYSE holidays, FOMC, opex, Santa Claus Rally, earnings seasons;
-13F filing deadlines; economic releases (jobs report, CPI, PPI, PCE, GDP, retail sales, housing
+VIX expirations; 13F filing deadlines; economic releases (jobs report, CPI, PPI, PCE, GDP, retail sales, housing
 starts and more, with release times) and Treasury coupon auctions on the day pages) ·
 earnings-season page · annual plan · for each month an opener (stats, trading-day chart, goals) and a
 month grid · for each of 52 weeks a day page (per-day history, events) and an ideas/trades/review page,

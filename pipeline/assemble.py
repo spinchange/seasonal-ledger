@@ -99,6 +99,8 @@ def main(year: int) -> None:
                         else "FOMC decision" + (" + SEP" if f.get("sep") else "")})
         if d in cal.opex:
             out.append({"kind": "opex", "text": "Quad witching" if cal.opex[d]["quad"] else "Options expiration"})
+        if d in cal.vix:
+            out.append({"kind": "opex", "text": "VIX expiration" + (" (moved for holiday)" if cal.vix[d]["moved"] else "")})
         if d in cal.early:
             out.append({"kind": "early", "text": cal.early[d]["note"]})
         if d in cal.santa:
@@ -152,6 +154,9 @@ def main(year: int) -> None:
                           + f" {DOW[d.weekday()]}" + (f" ({cal.opex[d]['note']})." if cal.opex[d]["note"] else "."))
         for s in kick:
             events.append(f"{s['quarter']} earnings season opens (est.).")
+        for d in wdays:
+            if d in cal.vix:
+                events.append(f"VIX options and futures expire {DOW[d.weekday()]}.")
         for d in wdays:
             if d in cal.f13:
                 events.append(f"13F holdings filings for {cal.f13[d]['quarter']} due {DOW[d.weekday()]}.")
@@ -301,6 +306,10 @@ def main(year: int) -> None:
                       "(BLS); GDP and PCE inflation (BEA); retail sales, housing starts, new home sales and durable "
                       "goods (Census). Weekly jobless claims come out every Thursday at 8:30. Agencies can move a "
                       "date; check the source before trading around one." if cal.econ else None),
+        "vix_note": ("VIX options and futures expire on the Wednesday 30 days before the third Friday of the "
+                     "following month, or the business day before if a holiday is in the way (Cboe): "
+                     + ", ".join(fmt_day(d) + (" (Tue)" if cal.vix[d]["moved"] else "") for d in sorted(cal.vix))
+                     + "." if cal.vix else None),
         "f13_note": ("Form 13F institutional holdings filings are due 45 days after each quarter ends (SEC): "
                      + ", ".join(fmt_day(d) for d in sorted(cal.f13)) + "." if cal.f13 else None),
         "auction_note": (f"Treasury coupon auctions (notes, bonds, TIPS, FRNs) are marked on the day pages "
