@@ -20,6 +20,13 @@ calendar and are totalled by month. It opens in Excel and converts to
 Google Sheets on upload to Drive. The statistics in it are values computed by the pipeline; the formulas
 are only the journal's. Keep your filled-in copy private.
 
+**Calendar files** (`build/seasonal-ledger-2027.ics`, `-history.ics`) import into Google Calendar, Apple
+Calendar or Outlook. The first holds the market calendar: closures, FOMC, option and VIX expirations,
+13F deadlines, Treasury auctions, estimated earnings seasons, and economic releases at their release time
+(Eastern). The second puts each trading day's history on that day (% of years up, average change, n = years
+in the sample), so it can be shown or hidden separately. Entries have stable IDs: re-importing a newer
+build updates them.
+
 ## Build
 
 Requirements: Python 3.11+, [Typst](https://typst.app) 0.15.1. Fonts (Crimson Text, Fira Sans; SIL OFL)
@@ -27,7 +34,7 @@ are vendored in `fonts/`.
 
 ```sh
 pip install -r requirements.txt
-python build.py              # -> build/seasonal-ledger-2027.pdf and .xlsx
+python build.py              # -> build/seasonal-ledger-2027.pdf, .xlsx and .ics files
 python build.py --fetch      # refresh S&P 500 prices first, then recompute stats
 python build.py --no-stats   # build from committed stats only (no price data needed)
 python build.py --png 1-9    # also render pages to build/png/ for review
@@ -46,6 +53,7 @@ planner/2027/econ_releases.yaml      BLS/BEA/Census release dates, from pipeline
 planner/2027/treasury_auctions.yaml  coupon auctions, from pipeline/fetch_auctions.py (Treasury's tentative schedule)
 pipeline/assemble.py  stats + calendar + notes -> build/planner.json
 pipeline/sheet.py     build/planner.json -> build/seasonal-ledger-2027.xlsx (workbook)
+pipeline/ics.py       build/planner.json -> build/seasonal-ledger-2027.ics, -history.ics (calendar files)
 typst/planner.typ     page order;  typst/pages.typ  page layouts;  typst/theme.typ  design tokens
 ```
 
