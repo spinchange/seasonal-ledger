@@ -47,7 +47,7 @@ END:VTIMEZONE""".splitlines()
 
 # Day-page badges that become their own entries elsewhere in this file.
 SKIP_KINDS = {"econ", "santa", "earn"}
-CATS = {"fomc": "FOMC", "opex": "Expirations", "early": "Market closed", "filing": "13F deadlines",
+CATS = {"fomc": "FOMC", "opex": "Expirations", "early": "Early close", "filing": "13F deadlines",
         "auction": "Treasury auctions", "earn": "Earnings season", "santa": "Santa Claus Rally",
         "econ": "Economic data", "history": "S&P history"}
 
